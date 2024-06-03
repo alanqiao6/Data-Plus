@@ -1,16 +1,24 @@
 # Data-Plus
 Improving Students’ STEM-Identity Through Design and Tinkering
 
+---
+# Final Datasets Creation
 
-**Creating Final Datasets**
-The process of creating final datasets involves the following steps:
+## Makers
+Includes information from 2022 and 2023. It groups the databases in the following specific order:
+- 🗂️ **Market Application**
+- 📝 **Pre Survey**
+- 📊 **Post Survey**
 
-**Makers**
+## Learners
+Includes information from 2021, 2022, and 2023. It groups the databases in the following specific order:
+- 📋 **Learners Registration**
+- 📚 **Roster**
+- 📝 **Pre Survey**
+- 📊 **Post Survey**
 
-Includes information from 2022 and 2023.
-Combines the Maker Application, Pre Survey, and Post Survey databases in that specific order.
+---
 
-**Learners**
+It is important to note that, for example, in the case of Learners, different questions were asked each year, which may not be included in all years. Therefore, for columns such as `Season`, `Wk1 Style`, or `Health: I would be willing to join community heart and lung health initiatives, such as volunteer opportunities`, there will not be responses for all years. 
 
-Includes information from 2021, 2022, and 2023.
-Combines the Learners Registration, Roster, Pre Survey, and Post Survey databases.
+For a detailed view of these columns, please refer to the file named **"Column comparison"** located in the folder **"40_finalDatasets"**.
