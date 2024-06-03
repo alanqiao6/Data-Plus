@@ -251,7 +251,7 @@ class CurriculumDropdown:
         self.button_label = button_label
         # Create a Button widget to trigger the dropdown, and pack it
         self.dropdown_button = Button(master, text=self.button_label, command=self.show_dropdown)
-        self.dropdown_button.grid(row=4, column=0)
+        self.dropdown_button.grid(row=5, column=0)
 
         # Initialize the dropdown window as None
         self.dropdown_window = None
