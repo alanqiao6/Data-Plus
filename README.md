@@ -6,7 +6,7 @@ Improving Students’ STEM-Identity Through Design and Tinkering
 
 ## Makers
 Includes information from 2022 and 2023. It groups the databases in the following specific order:
-- 🗂️ **Market Application**
+- 🗂️ **Makers Application**
 - 📝 **Pre Survey**
 - 📊 **Post Survey**
 
