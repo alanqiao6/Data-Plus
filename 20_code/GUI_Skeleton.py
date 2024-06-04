@@ -1,15 +1,14 @@
 from tkinter import *
 from tkinter.ttk import Combobox
-from PIL import ImageTk, Image
-import matplotlib.pyplot as plt
-import numpy as np
-from tkinter import *
 from tkinter.ttk import Button
+from tkinter import messagebox
+
 
 # Create Window
 root = Tk()
+root.attributes('-fullscreen', True)
 root.title('Ignite Data Analysis Tool')
-root.geometry("400x400")
+
 
 # Create Tags
 tagsLabel = Label(root, text="Tags:").grid(row=0, column=0)
@@ -40,6 +39,8 @@ class GenderDropdown:
             self.dropdown_window.transient(self.master)
             # Make the dropdown window modal
             self.dropdown_window.grab_set()
+            self.dropdown_window.protocol("WM_DELETE_WINDOW", self.on_dropdown_close)
+
 
             # Create a Listbox widget for displaying options, with multiple selection mode
             self.listbox = Listbox(self.dropdown_window, selectmode='multiple')
@@ -65,6 +66,10 @@ class GenderDropdown:
             self.dropdown_button.config(text=self.button_label)
         
         # Destroy the dropdown window and reset the reference to None
+        self.dropdown_window.destroy()
+        self.dropdown_window = None
+
+    def on_dropdown_close(self):
         self.dropdown_window.destroy()
         self.dropdown_window = None
 
@@ -99,6 +104,7 @@ class GradeDropdown:
             self.dropdown_window.transient(self.master)
             # Make the dropdown window modal
             self.dropdown_window.grab_set()
+            self.dropdown_window.protocol("WM_DELETE_WINDOW", self.on_dropdown_close)
 
             # Create a Listbox widget for displaying options, with multiple selection mode
             self.listbox = Listbox(self.dropdown_window, selectmode='multiple')
@@ -126,7 +132,12 @@ class GradeDropdown:
         # Destroy the dropdown window and reset the reference to None
         self.dropdown_window.destroy()
         self.dropdown_window = None
-gradeoptions = ["6", "7", "8", "9", "10", "11", "12"]
+
+    def on_dropdown_close(self):
+        self.dropdown_window.destroy()
+        self.dropdown_window = None
+
+gradeoptions = ["6", "7", "8", "9", "10", "11", "12", "All Grades"]
 gradedropdown = GradeDropdown(root, gradeoptions)
 
 class SchoolDropdown:
@@ -155,6 +166,8 @@ class SchoolDropdown:
             self.dropdown_window.transient(self.master)
             # Make the dropdown window modal
             self.dropdown_window.grab_set()
+            self.dropdown_window.protocol("WM_DELETE_WINDOW", self.on_dropdown_close)
+
 
             # Create a Listbox widget for displaying options, with multiple selection mode
             self.listbox = Listbox(self.dropdown_window, selectmode='multiple')
@@ -182,6 +195,11 @@ class SchoolDropdown:
         # Destroy the dropdown window and reset the reference to None
         self.dropdown_window.destroy()
         self.dropdown_window = None
+
+    def on_dropdown_close(self):
+        self.dropdown_window.destroy()
+        self.dropdown_window = None
+
 schooloptions = ["Public (Including DPS)", "DPS", "Private"]
 schooldropdown = SchoolDropdown(root, schooloptions)
 
@@ -211,6 +229,8 @@ class ZipCodeDropdown:
             self.dropdown_window.transient(self.master)
             # Make the dropdown window modal
             self.dropdown_window.grab_set()
+            self.dropdown_window.protocol("WM_DELETE_WINDOW", self.on_dropdown_close)
+
 
             # Create a Listbox widget for displaying options, with multiple selection mode
             self.listbox = Listbox(self.dropdown_window, selectmode='multiple')
@@ -238,6 +258,11 @@ class ZipCodeDropdown:
         # Destroy the dropdown window and reset the reference to None
         self.dropdown_window.destroy()
         self.dropdown_window = None
+
+    def on_dropdown_close(self):
+        self.dropdown_window.destroy()
+        self.dropdown_window = None
+
 zipcodeoptions = ["00000",  "11111"]
 zipcodedropdown = ZipCodeDropdown(root, zipcodeoptions)
 
@@ -267,6 +292,7 @@ class CurriculumDropdown:
             self.dropdown_window.transient(self.master)
             # Make the dropdown window modal
             self.dropdown_window.grab_set()
+            self.dropdown_window.protocol("WM_DELETE_WINDOW", self.on_dropdown_close)
 
             # Create a Listbox widget for displaying options, with multiple selection mode
             self.listbox = Listbox(self.dropdown_window, selectmode='multiple')
@@ -294,6 +320,11 @@ class CurriculumDropdown:
         # Destroy the dropdown window and reset the reference to None
         self.dropdown_window.destroy()
         self.dropdown_window = None
+
+    def on_dropdown_close(self):
+        self.dropdown_window.destroy()
+        self.dropdown_window = None
+
 curriculumoptions = ["Light", "Water", "Health"]
 curriculumdropdown = CurriculumDropdown(root, curriculumoptions)
 
@@ -323,6 +354,7 @@ class StudentTypeDropdown:
             self.dropdown_window.transient(self.master)
             # Make the dropdown window modal
             self.dropdown_window.grab_set()
+            self.dropdown_window.protocol("WM_DELETE_WINDOW", self.on_dropdown_close)
 
             # Create a Listbox widget for displaying options, with multiple selection mode
             self.listbox = Listbox(self.dropdown_window, selectmode='multiple')
@@ -350,6 +382,11 @@ class StudentTypeDropdown:
         # Destroy the dropdown window and reset the reference to None
         self.dropdown_window.destroy()
         self.dropdown_window = None
+    
+    def on_dropdown_close(self):
+        self.dropdown_window.destroy()
+        self.dropdown_window = None
+
 studenttypeoptions = ["Learner", "Maker", "Trainer"]
 studenttypedropdown = StudentTypeDropdown(root, studenttypeoptions)
 
@@ -379,6 +416,7 @@ class ProgramYearDropdown:
             self.dropdown_window.transient(self.master)
             # Make the dropdown window modal
             self.dropdown_window.grab_set()
+            self.dropdown_window.protocol("WM_DELETE_WINDOW", self.on_dropdown_close)
 
             # Create a Listbox widget for displaying options, with multiple selection mode
             self.listbox = Listbox(self.dropdown_window, selectmode='multiple')
@@ -406,6 +444,10 @@ class ProgramYearDropdown:
         # Destroy the dropdown window and reset the reference to None
         self.dropdown_window.destroy()
         self.dropdown_window = None
+    def on_dropdown_close(self):
+        self.dropdown_window.destroy()
+        self.dropdown_window = None
+
 programyearoptions = ["2021-2022", "2022-2023", "2023-2024" ]
 programyeardropdown = ProgramYearDropdown(root, programyearoptions)
 
@@ -435,6 +477,7 @@ class StudentContinuationDropdown:
             self.dropdown_window.transient(self.master)
             # Make the dropdown window modal
             self.dropdown_window.grab_set()
+            self.dropdown_window.protocol("WM_DELETE_WINDOW", self.on_dropdown_close)
 
             # Create a Listbox widget for displaying options, with multiple selection mode
             self.listbox = Listbox(self.dropdown_window, selectmode='multiple')
@@ -462,21 +505,34 @@ class StudentContinuationDropdown:
         # Destroy the dropdown window and reset the reference to None
         self.dropdown_window.destroy()
         self.dropdown_window = None
+    def on_dropdown_close(self):
+        self.dropdown_window.destroy()
+        self.dropdown_window = None
+
 studentcontinuationoptions = ["1 year Learner", "2 year Learner", "3 year Leaner", "Learner to Maker", "1 year Maker", "2 year Maker", "3 year Maker"]
 studentcontinuationdropdown = StudentContinuationDropdown(root, studentcontinuationoptions)
 
 
-# Run the Tkinter event loop
-root.mainloop()
+class checkbox:
+    def __init__(self, root, text, row):
+        self.var = IntVar()
+        self.c = Checkbutton(root, text=text, variable=self.var)
+        self.c.grid(row=row, column=1)
+
+# Creating an instance of checkbox class
+checkbox1 = checkbox(root, "Visualization", 1)
+checkbox2 = checkbox(root, "Engagement Scores", 2)
+checkbox3 = checkbox(root, "Attendance Percentage", 3)
+checkbox4 = checkbox(root, "Paired t-test", 4)
+checkbox5 = checkbox(root, "ANOVA", 5)
+
 
 #testing to see if git works
 
 
 
 # Create Operations
-operationsLabel = Label(root, text= "Operations:").grid(row=0, column=2)
-
-
+operationsLabel = Label(root, text= "Operations:").grid(row=0, column=1)
 
 
 
