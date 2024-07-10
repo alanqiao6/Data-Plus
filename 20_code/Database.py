@@ -5,7 +5,7 @@ import numpy as np
 import re
 
 # Configuration
-database_name = "ignite"
+database_name = "ignite_data"
 config = { 
     'user': "root",
     'password': 'Alice6688!', 
@@ -22,7 +22,7 @@ except mysql.connector.Error as err:
     exit(1)
 
 table_names = ['ignite']
-csv_file_paths = ["50_score_datasets/gui_dataset.csv"]
+csv_file_paths = ["50_score_datasets/final_gui_dataset.csv"]
 
 def check_database_exists(cursor, database_name):
     cursor.execute("SHOW DATABASES LIKE %s", (database_name,))
