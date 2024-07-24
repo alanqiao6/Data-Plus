@@ -8,7 +8,7 @@ import re
 database_name = "ignite_data"
 config = { 
     'user': "root",
-    'password': 'Alice6688!', 
+    'password': 'yourPasswordHere', 
     'host': 'localhost',
     'raise_on_warnings': True
 }
