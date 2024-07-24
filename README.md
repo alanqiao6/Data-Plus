@@ -1,6 +1,6 @@
 # Data-Plus
 Ignite: Improving Students’ STEM-Identity Through Design and Tinkering
-Ignite Data Analysis Tool: ignitebass.pythonanywhere.com
+Ignite Data Analysis Tool: [ignitebass.pythonanywhere.com](ignitebass.pythonanywhere.com)
 
 ---
 # Ignite Data Analysis Tool
@@ -37,9 +37,9 @@ Includes all original pre and post survey question results labeled by each year.
 ---
 
 # Github
-Github hosts our original data, clean data (scrubbed and deidentified), and code. You can access our various datasets in final and score datasets, with final_gui_dataset in 50_score_datasets being the dataset used in our API.
+Github hosts our original data, clean data (scrubbed and deidentified), and code. You can access our various datasets in final and score datasets, with [final_gui_dataset](50_score_datasets/final_gui_dataset.csv) in [50_score_datasets](50_score_datasets) being the dataset used in our API.
 
-The code section includes how we manipulated the dataset in python and R to create our final_gui_dataset. This final_gui_dataset includes all survey questions with scores across learners, makers, and trainers, along with added columns such as student_continuation.
+The code section includes how we manipulated the dataset in python and R to create our [final_gui_dataset](50_score_datasets/final_gui_dataset.csv). This final_gui_dataset includes all survey questions with scores across learners, makers, and trainers, along with added columns such as student_continuation.
 
 ---
 
