@@ -10,9 +10,10 @@ Data stored in /home/igniteBass/db/ignite.sql , Python code in /home/igniteBass/
 
 
 ## Updating Dataset
-Prerequisites: Install MySQLWorkbench and compile deidentified dataset into .csv file with column names in the form of finalguidataset.csv using the Python Data Dictionary to translate the column names from the questions in the pre and post surveys.
+Prerequisites: Install MySQLWorkbench and compile deidentified dataset into .csv file with column names in the form of final_gui_dataset.csv using the Python Data Dictionary to translate the column names from the questions in the pre and post surveys.
 
-Run database.py with file path to dataset, export the file from MySQLWorkbench and save as ignite.sql, and upload file to /home/igniteBass/db/ignite.sql on PythonAnywhere. 
+Run database.py with file path to dataset, export the file from MySQLWorkbench and save as ignite.sql, and upload file to /home/igniteBass/db/ignite.sql on PythonAnywhere (delete previous ignite.sql file).
+
 On PythonAnywhere, enter the MySQL: igniteBass$data console and use SOURCE db/ignite.sql;
 
 Reload the website to use the new dataset.
