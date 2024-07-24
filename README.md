@@ -25,17 +25,17 @@ PythonAnywhere must be reloaded on the Web tab every 3 months to keep the websit
 
 ---
 
-## Google Drive
+# Google Drive
 Includes our presentation slides/video, visualizations, data dictionary, and data analysis.
 
 ---
 
-## DukeBox
+# DukeBox
 Includes all original pre and post survey question results labeled by each year. Also includes engagement scores, registration, and other relevant data.
 
 ---
 
-## Github
+# Github
 Github hosts our original data, clean data (scrubbed and deidentified), and code. You can access our various datasets in final and score datasets, with final_gui_dataset in 50_score_datasets being the dataset used in our API.
 
 The code section includes how we manipulated the dataset in python and R to create our final_gui_dataset. This final_gui_dataset includes all survey questions with scores across learners, makers, and trainers, along with added columns such as student_continuation.
