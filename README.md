@@ -2,8 +2,6 @@
 Ignite: Improving Students’ STEM-Identity Through Design and Tinkering
 Ignite Data Analysis Tool: ignitebass.pythonanywhere.com
 
-[api](ignitebass.pythonanywhere.com)
-
 ---
 # Ignite Data Analysis Tool
 ## API
