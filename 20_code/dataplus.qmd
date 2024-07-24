@@ -1,0 +1,366 @@
+---
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r load, echo = FALSE}
+
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(png)
+library(dplyr)
+library(tidyr)
+
+learners <- read_excel("Learners.xlsx")
+makers <- read.csv("Database_Makers.csv")
+scores_makers <- read.csv("Makers.csv")
+gui <- read.csv("gui_dataset.csv")
+final_gui <- read.csv("final_gui_dataset.csv")
+```
+
+```{r remove-na-rows}
+
+scores_makers <- scores_makers[-c(34:37), ]
+
+learners <- learners |>
+  mutate(Year = recode(Year,`2022` = "2021-2022", `2023` = "2022-2023", `2024` = "2023-2024"))
+```
+
+```{r attend-per}
+
+library(dplyr)
+library(stringr)
+
+# Define the function to calculate attendance or mark as NA
+calculate_attendance <- function(weeks, post_survey) {
+  weeks_trimmed <- str_trim(weeks)  # Trim whitespace from each element in the weeks
+  weeks_lower <- tolower(weeks_trimmed)
+  
+  # Check for missing values in weeks and post_survey
+  if (any(is.na(weeks_lower)) || is.na(post_survey)) {
+    return(NA)
+  }
+  
+  if (any(weeks_lower %in% c("dropped", "removed", "absent/dropped", "dropped ")) || tolower(post_survey) != "x") {
+    return(NA)
+  } else {
+    present_weeks <- sum(weeks_lower == 'x')
+    return ((present_weeks / length(weeks)) * 100)  # Calculate percentage based on number of weeks
+  }
+}
+
+# Apply the function to each row of the selected weeks and create a new column for attendance percentage
+learners <- learners %>%
+  rowwise() %>%
+  mutate(Attendance_Percentage = calculate_attendance(c_across(`Wk 2`:`Wk 8`), `_Post- Survey`)) %>%
+  ungroup() %>%
+  relocate(Attendance_Percentage)
+
+learners$Attendance_Percentage <- ifelse(is.na(learners$Attendance_Percentage), "Dropped", learners$Attendance_Percentage)
+```
+
+```{r maker-calculate-100, warning = FALSE}
+
+scores_makers <- scores_makers |>
+  mutate(Year = recode(Year,
+                       '2023' = '2022-2023',
+                       '2024' = '2023-2024'))
+
+scores_makers <- scores_makers |>
+  rowwise() |>
+  mutate(pre_confidence_avg = mean(c_across(starts_with("pre_confidence")), na.rm = TRUE),
+         pre_motivation_avg = mean(c_across(starts_with("pre_motivation")), na.rm = TRUE),
+         pre_anxiety_avg = mean(c_across(starts_with("pre_anxiety")), na.rm = TRUE),
+         post_confidence_avg = mean(c_across(starts_with("post_confidence")), na.rm = TRUE),
+         post_motivation_avg = mean(c_across(starts_with("post_motivation")), na.rm = TRUE),
+         post_anxiety_avg = mean(c_across(starts_with("post_anxiety")), na.rm = TRUE)) |>
+  ungroup()
+
+
+scores_makers <- scores_makers |>
+  mutate(
+    diff_total_confidence = ifelse(is.na(pre_confidence_avg) | is.na(post_confidence_avg), NA, post_confidence_avg - pre_confidence_avg),
+    diff_total_motivation = ifelse(is.na(pre_motivation_avg) | is.na(post_motivation_avg), NA, post_motivation_avg - pre_motivation_avg),
+    diff_total_anxiety = ifelse(is.na(pre_anxiety_avg) | is.na(post_anxiety_avg), NA, pre_anxiety_avg - post_anxiety_avg)
+  )
+
+scores_makers_graph <- scores_makers |>
+  pivot_longer(cols = starts_with("diff"),
+               names_to = "QuestionType",
+               values_to = "Difference")
+
+average_data <- scores_makers_graph |>
+  group_by(Year, QuestionType) |>
+  summarize(AverageDifference = mean(Difference, na.rm = TRUE), .groups = 'drop')
+
+custom_colors <- c("2022-2023" = "#0e0c7c", "2023-2024" = "#f8e48c")
+
+question_type_names <- c("diff_total_anxiety" = "Anxiety",
+                         "diff_total_confidence" = "Confidence",
+                         "diff_total_motivation" = "Motivation")
+
+# Add a new column with custom question type names
+average_data <- average_data |>
+  mutate(QuestionTypeLabel = question_type_names[QuestionType])
+
+# Filter out NA values before plotting
+average_data_filtered <- average_data |>
+  filter(!is.na(AverageDifference))
+
+ggplot(average_data_filtered, aes(x = QuestionTypeLabel, y = AverageDifference, fill = as.factor(Year))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Makers: Average Differences in Question Types by Year",
+       x = "Question Type (100 point scale)",
+       y = "Average Difference (Post - Pre)",
+       fill = "Year",
+       subtitle = "100 Point Scale") +
+  scale_fill_manual(values = custom_colors) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(face = "bold"), margin = margin(t = 10))
+```
+
+\
+
+```{r learner-score-diff}
+
+scores_learners <- learners
+
+calculate_averages_and_differences <- function(data, pre_columns, post_columns) {
+  data <- data |>
+    rowwise() |>
+    mutate(
+      pre_community_avg = mean(c_across(all_of(pre_columns$community)), na.rm = TRUE),
+      pre_stem_avg = mean(c_across(all_of(pre_columns$stem)), na.rm = TRUE),
+      pre_engineering_avg = mean(c_across(all_of(pre_columns$engineering)), na.rm = TRUE),
+      pre_grit_avg = mean(c_across(all_of(pre_columns$grit)), na.rm = TRUE),
+      post_community_avg = mean(c_across(all_of(post_columns$community)), na.rm = TRUE),
+      post_stem_avg = mean(c_across(all_of(post_columns$stem)), na.rm = TRUE),
+      post_engineering_avg = mean(c_across(all_of(post_columns$engineering)), na.rm = TRUE),
+      post_grit_avg = mean(c_across(all_of(post_columns$grit)), na.rm = TRUE)
+    ) |>
+    ungroup() |>
+    mutate(
+      avg_diff_community = ifelse(is.na(pre_community_avg) | is.na(post_community_avg), NA, post_community_avg - pre_community_avg),
+      avg_diff_stem = ifelse(is.na(pre_stem_avg) | is.na(post_stem_avg), NA, post_stem_avg - pre_stem_avg),
+      avg_diff_engineering = ifelse(is.na(pre_engineering_avg) | is.na(post_engineering_avg), NA, post_engineering_avg - pre_engineering_avg),
+      avg_diff_grit = ifelse(is.na(pre_grit_avg) | is.na(post_grit_avg), NA, post_grit_avg - pre_grit_avg)
+    )
+  return(data)
+}
+
+# Define the pre and post columns
+pre_columns <- list(
+  community = c('pre_science_math_community', 'pre_STEM_world', 'pre_capable_building', 'pre_interest_community', 'pre_community_motivation'),
+  stem = c('pre_confident_math', 'pre_oppurtunity_math', 'pre_career_math', 'pre_confident_science', 'pre_oppurtunity_science', 'pre_oppurtunity_engineering', 'pre_STEM_job', 'pre_STEM_community', 'pre_STEM_world', 'pre_community_motivation', 'pre_STEM_oppurtunities', 'pre_confident_engineer'),
+  engineering = c('pre_career_science', 'pre_confident_engineer', 'pre_design_thinking'),
+  grit = c('pre_STEM_community', 'pre_STEM_world', 'pre_community_motivation', 'pre_overcame_setbacks')
+)
+
+post_columns <- list(
+  community = c('post_science_math_community', 'post_STEM_world', 'post_capable_building', 'post_interest_community', 'post_community_motivation'),
+  stem = c('post_confident_math', 'post_oppurtunity_math', 'post_career_math', 'post_confident_science', 'post_oppurtunity_science', 'post_oppurtunity_engineering', 'post_STEM_job', 'post_STEM_community', 'post_STEM_world', 'post_community_motivation', 'post_STEM_oppurtunities', 'post_confident_engineer'),
+  engineering = c('post_career_science', 'post_confident_engineer', 'post_design_thinking'),
+  grit = c('post_STEM_community', 'post_STEM_world', 'post_community_motivation', 'post_overcame_setbacks')
+)
+
+# Apply the function to scores_learners and scores_makers
+scores_learners <- calculate_averages_and_differences(scores_learners, pre_columns, post_columns)
+scores_makers <- calculate_averages_and_differences(scores_makers, pre_columns, post_columns)
+```
+
+```{r makers-5-graphs, warning = FALSE}
+
+scores_makers_2 <- scores_makers |>
+  pivot_longer(cols = starts_with("avg"),
+               names_to = "QType",
+               values_to = "Difference")
+
+scores_makers_2 <- scores_makers_2 |>
+  group_by(Year, QType) |>
+  summarize(AverageDifference = mean(Difference, na.rm = TRUE))
+
+custom_colors <- c("2022-2023" = "#0e0c7c", "2023-2024" = "#f8e48c")
+
+question_type_names <- c("avg_diff_community" = "Community-Identity",
+                         "avg_diff_stem" = "STEM Attitudes",
+                         "avg_diff_engineering" = "Engineering-Identity",
+                         "avg_diff_grit" = "Grit"
+                         )
+
+# Add a new column with custom question type names
+scores_makers_2 <- scores_makers_2 |>
+  mutate(QuestionTypeLabel = question_type_names[QType])
+
+ggplot(scores_makers_2, aes(x = QuestionTypeLabel, y = AverageDifference, fill = as.factor(Year))) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.7) +
+  labs(title = "Makers: Average Differences in Question Types by Year",
+       x = "Question Type",
+       y = "Average Difference (Post - Pre)",
+       fill = "Year",
+       subtitle = "5 Point Scale") +
+  scale_fill_manual(values = custom_colors) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(face = "bold", angle = 45, hjust = 1))
+```
+
+```{r learners-diff-graph}
+scores_learners_select <- scores_learners |>
+  select(ID, Year, starts_with("avg"), starts_with("pre"), starts_with("post"))
+
+# Pivoting longer
+scores_learners_2 <- scores_learners |>
+  pivot_longer(cols = starts_with("avg"),
+               names_to = "QType",
+               values_to = "Difference")
+
+# Summarizing data
+scores_learners_2 <- scores_learners_2 |>
+  group_by(Year, QType) |>
+  summarize(AverageDifference = mean(Difference, na.rm = TRUE), .groups = 'drop')
+
+scores_learners_2 <- scores_learners_2 |>
+  filter(Year %in% c('2022-2023', '2023-2024'))
+
+scores_learners_2 <- scores_learners_2 |>
+  complete(Year, QType, fill = list(AverageDifference = 0))
+
+# Define custom colors
+custom_colors <- c("2022-2023" = "#0e0c7c", "2023-2024" = "#f8e48c")
+
+# Define custom question type names
+question_type_names <- c("avg_diff_community" = "Community-Identity",
+                         "avg_diff_stem" = "STEM Attitudes",
+                         "avg_diff_engineering" = "Engineering-Identity",
+                         "avg_diff_grit" = "Grit")
+
+# Adding new column with custom question type names
+scores_learners_2 <- scores_learners_2 |>
+  mutate(QuestionTypeLabel = recode(QType, !!!question_type_names))
+
+# Ensure all combinations of Year and QType are present
+complete_data <- scores_learners_2 |>
+  complete(Year, QType, fill = list(AverageDifference = 0))
+
+# Plotting
+ggplot(complete_data, aes(x = QuestionTypeLabel, y = AverageDifference, fill = as.factor(Year))) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.7) +
+  labs(title = "Learners: Average Differences in Question Types by Year",
+       x = "Question Type",
+       y = "Average Difference (Post - Pre)",
+       fill = "Year",
+       subtitle = "5 Point Scale") +
+  scale_fill_manual(values = custom_colors) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(face = "bold", angle = 45, hjust = 1))
+```
+
+```{r write}
+
+write.csv(scores_learners, "scores_learners.csv")
+write.csv(scores_makers, "scores_makers.csv")
+```
+
+```{r student-continuation}
+
+# Count the occurrences of each ID
+repeated_ids <- gui |>
+  group_by(ID) |>
+  summarize(count = n()) |>
+  filter(count > 1)
+
+# Print the repeated IDs
+print(repeated_ids)
+```
+
+```{r}
+
+final_gui <- final_gui[ , !(names(final_gui) %in% c("community_avg", "stem_avg", "engineering_avg", "grit_avg", "community_avg.1", "stem_avg.1", "engineering_avg.1", "grit_avg.1", "post_grit_avg", "pre_confidence_avg", "pre_motivation_avg", "pre_anxiety_avg", "post_confidence_avg", "post_motivation_avg", "post_anxiety_avg"))]
+```
+
+```{r final-gui}
+
+pre_math_columns <- final_gui |>
+  select(science_math_community, math_confidence_stem, math_stem_opportunity, math_stem_career)
+
+post_math_columns <- final_gui |>
+  select(science_math_community.1, math_confidence_stem.1, math_stem_opportunity.1, math_stem_career.1)
+
+pre_science_columns <- final_gui |>
+  select(science_math_community, science_stem_confidence, science_stem_opportunity, science_stem_career)
+
+post_science_columns <- final_gui |>
+  select(science_math_community.1, science_stem_confidence.1, science_stem_opportunity.1, science_stem_career.1)
+
+pre_stem_columns <- final_gui |>
+  select(math_confidence_stem, math_stem_career, math_stem_opportunity, science_stem_confidence, science_stem_opportunity, science_stem_career, engineer_stem_opportunity, stem_career, stem_community, grit_stem_problemsolve, grit_community_stem_problemsolve, stem_opportunity)
+
+post_stem_columns <- final_gui |>
+  select(math_confidence_stem.1, math_stem_career.1, math_stem_opportunity.1, science_stem_confidence.1, science_stem_opportunity.1, science_stem_career.1, engineer_stem_opportunity.1, stem_career.1, stem_community.1, grit_stem_problemsolve.1, grit_community_stem_problemsolve.1, stem_opportunity.1)
+
+pre_engineer_columns <- final_gui |>
+  select(engineer_confidence, engineer_stem_opportunity, engineer_problemsolve_design)
+
+post_engineer_columns <- final_gui |>
+  select(engineer_confidence.1, engineer_stem_opportunity.1, engineer_problemsolve_design.1)
+
+pre_grit_columns <- final_gui |>
+  select(grit_stem_problemsolve, grit_community_stem_problemsolve, grit_problemsolve)
+
+post_grit_columns <- final_gui |>
+  select(grit_stem_problemsolve.1, grit_community_stem_problemsolve.1, grit_problemsolve.1)
+
+pre_community_cols <- final_gui |>
+  select(science_math_community, stem_community, grit_community_stem_problemsolve, community_design_confidence, community_problemsolve_design)
+
+post_community_cols <- final_gui |>
+  select(science_math_community.1, stem_community.1, grit_community_stem_problemsolve.1, community_design_confidence.1, community_problemsolve_design.1)
+
+pre_confidence_cols <- final_gui |>
+  select(confidence_conduct, confidence_identify, confidence_research, confidence_develop, confidence_select, confidence_construct, confidence_evaluate, confidence_communicate, confidence_redesign)
+
+post_confidence_cols <- final_gui |>
+  select(confidence_conduct.1, confidence_identify.1, confidence_research.1, confidence_develop.1, confidence_select.1, confidence_construct.1, confidence_evaluate.1, confidence_communicate.1, confidence_redesign.1)
+
+pre_motivation_cols <- final_gui |>
+  select(motivation_conduct, motivation_identify, motivation_research, motivation_develop, motivation_select, motivation_construct, motivation_evaluate, motivation_communicate, motivation_redesign)
+
+post_motivation_cols <- final_gui |>
+  select(motivation_conduct.1, motivation_identify.1, motivation_research.1, motivation_develop.1, motivation_select.1, motivation_construct.1, motivation_evaluate.1, motivation_communicate.1, motivation_redesign.1)
+
+pre_anxiety_cols <- final_gui |>
+  select(anxiety_conduct, anxiety_identify, anxiety_research, anxiety_develop, anxiety_select, anxiety_construct, anxiety_evaluate, anxiety_communicate, anxiety_redesign)
+
+post_anxiety_cols <- final_gui |>
+  select(anxiety_conduct.1, anxiety_identify.1, anxiety_research.1, anxiety_develop.1, anxiety_select.1, anxiety_construct.1, anxiety_evaluate.1, anxiety_communicate.1, anxiety_redesign.1)
+
+final_gui <- final_gui |>
+  mutate(
+    math_avg = rowMeans(across(all_of(names(pre_math_columns))), na.rm = TRUE),
+    math_avg.1 = rowMeans(across(all_of(names(post_math_columns))), na.rm = TRUE),
+    science_avg = rowMeans(across(all_of(names(pre_science_columns))), na.rm = TRUE),
+    science_avg.1 = rowMeans(across(all_of(names(post_science_columns))), na.rm = TRUE),
+    community_avg = rowMeans(across(all_of(names(pre_community_cols))), na.rm = TRUE),
+    community_avg.1 = rowMeans(across(all_of(names(post_community_cols))), na.rm = TRUE),
+    stem_avg = rowMeans(across(all_of(names(pre_stem_columns))), na.rm = TRUE),
+    stem_avg.1 = rowMeans(across(all_of(names(post_stem_columns))), na.rm = TRUE),
+    engineer_avg = rowMeans(across(all_of(names(pre_engineer_columns))), na.rm = TRUE),
+    engineer_avg.1 = rowMeans(across(all_of(names(post_engineer_columns))), na.rm = TRUE),
+    grit_avg = rowMeans(across(all_of(names(pre_grit_columns))), na.rm = TRUE),
+    grit_avg.1 = rowMeans(across(all_of(names(post_grit_columns))), na.rm = TRUE),
+    confidence_avg = rowMeans(across(all_of(names(pre_confidence_cols))), na.rm = TRUE),
+    confidence_avg.1 = rowMeans(across(all_of(names(post_confidence_cols))), na.rm = TRUE),
+    motivation_avg = rowMeans(across(all_of(names(pre_motivation_cols))), na.rm = TRUE),
+    motivation_avg.1 = rowMeans(across(all_of(names(post_motivation_cols))), na.rm = TRUE),
+    anxiety_avg = rowMeans(across(all_of(names(pre_anxiety_cols))), na.rm = TRUE),
+    anxiety_avg.1 = rowMeans(across(all_of(names(post_anxiety_cols))), na.rm = TRUE),
+  )
+
+# Print the updated data frame
+print(final_gui)
+```
+
+```{r}
+write.csv(final_gui, "final_gui.csv")
+```
